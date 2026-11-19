@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LinguaMaster</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#0f172a;
+    color:white;
+    margin:0;
+    padding:20px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+.card{
+    background:#1e293b;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:20px;
+}
+
+h1,h2{
+    text-align:center;
+}
+
+button{
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    margin:5px;
+    background:#3b82f6;
+    color:white;
+}
+
+button:hover{
+    background:#2563eb;
+}
+
+input{
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    width:250px;
+}
+
+.progress{
+    width:100%;
+    height:20px;
+    background:#334155;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    height:100%;
+    width:0%;
+    background:#22c55e;
+}
+
+.hidden{
+    display:none;
+}
+
+#word{
+    font-size:34px;
+    text-align:center;
+}
+
+#translation{
+    font-size:28px;
+    text-align:center;
+    color:#38bdf8;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>🌍 LinguaMaster</h1>
+
+<div class="card" id="loginBox">
+<h2>Login</h2>
+
+<input id="username" placeholder="Benutzername">
+<br><br>
+
+<button onclick="login()">
+Login
+</button>
+</div>
+
+<div id="app" class="hidden">
+
+<div class="card">
+
+<h2 id="welcome"></h2>
+
+<p>⭐ XP: <span id="xp">0</span></p>
+<p>🏆 Level: <span id="level">1</span></p>
+
+<div class="progress">
+<div id="bar" class="progress-bar"></div>
+</div>
+
+</div>
+
+<div class="card">
+
+<h2>Karteikarten</h2>
+
+<div id="word">Hallo</div>
+
+<br>
+
+<button onclick="showJapanese()">
+🇯🇵 Japanisch
+</button>
+
+<button onclick="showSerbian()">
+🇷🇸 Serbisch
+</button>
+
+<button onclick="speak()">
+🔊 Vorlesen
+</button>
+
+<p id="translation"></p>
+
+<button onclick="nextWord()">
+Nächstes Wort (+10 XP)
+</button>
+
+</div>
+
+<div class="card">
+
+<h2>Suche</h2>
+
+<input
+id="search"
+placeholder="Deutsches Wort"
+onkeyup="searchWord()">
+
+<p id="searchResult"></p>
+
+</div>
+
+<div class="card">
+
+<h2>Quiz</h2>
+
+<p id="quizQuestion"></p>
+
+<input id="answer">
+
+<br><br>
+
+<button onclick="checkAnswer()">
+Antwort prüfen
+</button>
+
+<p id="quizResult"></p>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const words = [
+
+{german:"Hallo",japanese:"こんにちは",serbian:"Zdravo"},
+{german:"Danke",japanese:"ありがとう",serbian:"Hvala"},
+{german:"Bitte",japanese:"お願いします",serbian:"Molim"},
+{german:"Ja",japanese:"はい",serbian:"Da"},
+{german:"Nein",japanese:"いいえ",serbian:"Ne"},
+{german:"Hund",japanese:"犬",serbian:"Pas"},
+{german:"Katze",japanese:"猫",serbian:"Mačka"},
+{german:"Pferd",japanese:"馬",serbian:"Konj"},
+{german:"Wasser",japanese:"水",serbian:"Voda"},
+{german:"Milch",japanese:"牛乳",serbian:"Mleko"},
+{german:"Brot",japanese:"パン",serbian:"Hleb"},
+{german:"Apfel",japanese:"りんご",serbian:"Jabuka"},
+{german:"Banane",japanese:"バナナ",serbian:"Banana"},
+{german:"Auto",japanese:"車",serbian:"Auto"},
+{german:"Fahrrad",japanese:"自転車",serbian:"Bicikl"},
+{german:"Bus",japanese:"バス",serbian:"Autobus"},
+{german:"Zug",japanese:"電車",serbian:"Voz"},
+{german:"Flugzeug",japanese:"飛行機",serbian:"Avion"},
+{german:"Haus",japanese:"家",serbian:"Kuća"},
+{german:"Wohnung",japanese:"アパート",serbian:"Stan"},
+{german:"Fenster",japanese:"窓",serbian:"Prozor"},
+{german:"Tür",japanese:"ドア",serbian:"Vrata"},
+{german:"Tisch",japanese:"テーブル",serbian:"Sto"},
+{german:"Stuhl",japanese:"椅子",serbian:"Stolica"},
+{german:"Freund",japanese:"友達",serbian:"Prijatelj"},
+{german:"Familie",japanese:"家族",serbian:"Porodica"},
+{german:"Mutter",japanese:"母",serbian:"Majka"},
+{german:"Vater",japanese:"父",serbian:"Otac"},
+{german:"Bruder",japanese:"兄弟",serbian:"Brat"},
+{german:"Schwester",japanese:"姉妹",serbian:"Sestra"},
+{german:"Schule",japanese:"学校",serbian:"Škola"},
+{german:"Lehrer",japanese:"先生",serbian:"Nastavnik"},
+{german:"Schüler",japanese:"生徒",serbian:"Učenik"},
+{german:"Buch",japanese:"本",serbian:"Knjiga"},
+{german:"Heft",japanese:"ノート",serbian:"Sveska"},
+{german:"Sonne",japanese:"太陽",serbian:"Sunce"},
+{german:"Mond",japanese:"月",serbian:"Mesec"},
+{german:"Stern",japanese:"星",serbian:"Zvezda"},
+{german:"Baum",japanese:"木",serbian:"Drvo"},
+{german:"Blume",japanese:"花",serbian:"Cvet"},
+{german:"laufen",japanese:"走る",serbian:"Trčati"},
+{german:"essen",japanese:"食べる",serbian:"Jesti"},
+{german:"trinken",japanese:"飲む",serbian:"Piti"},
+{german:"lesen",japanese:"読む",serbian:"Čitati"},
+{german:"schreiben",japanese:"書く",serbian:"Pisati"},
+{german:"groß",japanese:"大きい",serbian:"Velik"},
+{german:"klein",japanese:"小さい",serbian:"Mali"},
+{german:"schnell",japanese:"速い",serbian:"Brz"},
+{german:"langsam",japanese:"遅い",serbian:"Spor"}
+];
+
+let current = 0;
+let xp = Number(localStorage.getItem("xp")) || 0;
+let quizWord;
+
+function login(){
+
+const user =
+document.getElementById("username").value || "Gast";
+
+localStorage.setItem("user",user);
+
+document.getElementById("loginBox")
+.classList.add("hidden");
+
+document.getElementById("app")
+.classList.remove("hidden");
+
+document.getElementById("welcome")
+.innerText = "Willkommen " + user;
+
+updateStats();
+newQuiz();
+
+}
+
+window.onload = () => {
+
+const user = localStorage.getItem("user");
+
+if(user){
+
+document.getElementById("loginBox")
+.classList.add("hidden");
+
+document.getElementById("app")
+.classList.remove("hidden");
+
+document.getElementById("welcome")
+.innerText = "Willkommen " + user;
+
+updateStats();
+newQuiz();
+
+}
+
+};
+
+function updateStats(){
+
+let level =
+Math.floor(xp / 100) + 1;
+
+document.getElementById("xp").innerText = xp;
+document.getElementById("level").innerText = level;
+
+document.getElementById("bar").style.width =
+(xp % 100) + "%";
+
+}
+
+function showJapanese(){
+translation.innerText =
+words[current].japanese;
+}
+
+function showSerbian(){
+translation.innerText =
+words[current].serbian;
+}
+
+function nextWord(){
+
+current++;
+
+if(current >= words.length){
+current = 0;
+}
+
+word.innerText =
+words[current].german;
+
+translation.innerText = "";
+
+xp += 10;
+
+localStorage.setItem("xp",xp);
+
+updateStats();
+
+}
+
+function speak(){
+
+let text = words[current].german;
+
+let utterance =
+new SpeechSynthesisUtterance(text);
+
+speechSynthesis.speak(utterance);
+
+}
+
+function searchWord(){
+
+let value =
+document.getElementById("search")
+.value.toLowerCase();
+
+let result =
+words.find(
+w => w.german.toLowerCase().includes(value)
+);
+
+if(result){
+
+document.getElementById("searchResult")
+.innerText =
+result.german +
+" | " +
+result.japanese +
+" | " +
+result.serbian;
+
+}
+
+}
+
+function newQuiz(){
+
+quizWord =
+words[Math.floor(Math.random()*words.length)];
+
+document.getElementById("quizQuestion")
+.innerText =
+"Wie lautet die serbische Übersetzung von: "
++ quizWord.german;
+
+}
+
+function checkAnswer(){
+
+let answer =
+document.getElementById("answer")
+.value.trim().toLowerCase();
+
+if(
+answer ===
+quizWord.serbian.toLowerCase()
+){
+
+xp += 20;
+
+localStorage.setItem("xp",xp);
+
+updateStats();
+
+document.getElementById("quizResult")
+.innerText =
+"✅ Richtig (+20 XP)";
+
+}else{
+
+document.getElementById("quizResult")
+.innerText =
+"❌ Richtig wäre: "
++ quizWord.serbian;
+
+}
+
+document.getElementById("answer").value="";
+
+newQuiz();
+
+}
+
+</script>
+
+</body>
+</html>
